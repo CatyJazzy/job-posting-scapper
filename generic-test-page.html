@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generic Collector Test Page</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1d232b;
+    }
+
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 36px 20px 60px;
+    }
+
+    .background-sample {
+      min-height: 160px;
+      border: 1px solid #d7dde5;
+      border-radius: 8px;
+      background-image: url("https://inthiswork.com/wp-content/uploads/2026/04/1234-screencapture-901.png");
+      background-size: cover;
+      background-position: center;
+    }
+
+    img {
+      max-width: 280px;
+      display: block;
+      margin: 14px 0;
+      border: 1px solid #d7dde5;
+      border-radius: 6px;
+    }
+
+    a {
+      color: #2457d6;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Generic Collector Test Page</h1>
+    <p>북마클릿의 Generic fallback 동작을 확인하기 위한 테스트 페이지입니다.</p>
+
+    <h2>Image</h2>
+    <img
+      alt="테스트 공고 이미지"
+      src="https://inthiswork.com/wp-content/uploads/2026/04/1234-screencapture-901.png"
+      srcset="https://inthiswork.com/wp-content/uploads/2026/04/1234-screencapture-901.png 900w, https://inthiswork.com/wp-content/uploads/2026/05/1234-screencapture-399.png 1356w">
+
+    <h2>Picture Source</h2>
+    <picture>
+      <source srcset="https://inthiswork.com/wp-content/uploads/2026/05/12345-screencapture-206.jpg 1220w">
+      <img alt="picture fallback" src="https://inthiswork.com/wp-content/uploads/2026/05/12345-screencapture-206.jpg">
+    </picture>
+
+    <h2>PDF Link</h2>
+    <p>
+      <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf">테스트 PDF</a>
+    </p>
+
+    <h2>Background Image</h2>
+    <div class="background-sample"></div>
+  </main>
+</body>
+</html>

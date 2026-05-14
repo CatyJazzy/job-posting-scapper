@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>공고 이미지 수집 북마클릿 MVP</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #17191c;
+      --muted: #656b73;
+      --line: #dfe3e8;
+      --brand: #2457d6;
+      --brand-dark: #163ea4;
+      --ok: #0f7b43;
+      --warn: #a15c00;
+      --code: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      width: min(1060px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 44px 0 64px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 32px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 20px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    .lead {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      box-shadow: 0 8px 22px rgba(20, 28, 45, 0.06);
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    .bookmarklet {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 6px;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .bookmarklet:active {
+      cursor: grabbing;
+    }
+
+    .steps {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .steps li {
+      margin: 8px 0;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #f9fafb;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .note {
+      padding: 12px 14px;
+      border-radius: 6px;
+      background: #fff8eb;
+      color: #5b3a00;
+      border: 1px solid #f3d49a;
+      font-size: 14px;
+    }
+
+    .ok {
+      background: #eefaf3;
+      color: #075d31;
+      border-color: #bde8cd;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #0f172a;
+      color: #dbeafe;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    button {
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--brand);
+      color: white;
+      font-weight: 700;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--brand-dark);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    code {
+      border-radius: 4px;
+      background: #eef1f5;
+      padding: 2px 5px;
+      color: var(--code);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        width: min(100% - 24px, 1060px);
+        padding-top: 28px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>공고 이미지 수집 북마클릿 MVP</h1>
+    <p class="lead">
+      Jobda와 인디스워크 공고 페이지에서 실행해 공고 이미지/PDF 후보를 수집하고,
+      자동 다운로드 시도와 manifest 저장을 제공하는 서버 없는 북마클릿입니다.
+    </p>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>설치</h2>
+        <p>아래 버튼을 브라우저 북마크바로 드래그하세요.</p>
+        <p><a id="bookmarkletLink" class="bookmarklet" href="#">공고 이미지 수집</a></p>
+        <p class="note">
+          북마크바가 보이지 않으면 Chrome 기준 <code>보기 &gt; 북마크바 항상 표시</code>를 켜고 드래그하면 됩니다.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h2>사용법</h2>
+        <ol class="steps">
+          <li>지원 사이트의 공고 목록 페이지에 접속합니다.</li>
+          <li>북마크바의 <code>공고 이미지 수집</code>을 클릭합니다.</li>
+          <li>오버레이에서 후보를 확인하고 필요한 항목만 선택합니다.</li>
+          <li><code>선택 다운로드</code>와 <code>manifest 저장</code>을 실행합니다.</li>
+        </ol>
+      </div>
+
+      <div class="panel">
+        <h2>지원 사이트</h2>
+        <div class="pill-list">
+          <span class="pill">Jobda: www.jobda.im/position</span>
+          <span class="pill">인디스워크: inthiswork.com/entry</span>
+          <span class="pill">Generic fallback</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>제한사항</h2>
+        <p class="note">
+          브라우저 정책이나 사이트 CORS 때문에 모든 파일이 자동 저장되지는 않을 수 있습니다.
+          이 경우에도 전체 후보 URL과 실패 정보는 <code>manifest.json</code>에 남깁니다.
+        </p>
+      </div>
+
+      <div class="panel wide">
+        <h2>원본 북마클릿 코드</h2>
+        <p>보안 정책상 드래그 설치가 막히면, 북마크 URL에 아래 코드를 직접 넣을 수 있습니다.</p>
+        <div class="toolbar">
+          <button id="copyCode" type="button">코드 복사</button>
+          <span id="copyStatus" aria-live="polite"></span>
+        </div>
+        <textarea id="bookmarkletCode" readonly spellcheck="false"></textarea>
+      </div>
+    </section>
+  </main>
+
+  <script id="collector-source" type="text/plain">
+(async function () {
+  "use strict";
+
+  var APP_ID = "notice-collector-mvp";
+  var VERSION = "0.1.0";
+  var IMAGE_EXT_RE = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?|#|$)/i;
+  var PDF_EXT_RE = /\.pdf(\?|#|$)/i;
+  var ASSET_EXT_RE = /\.(avif|bmp|gif|jpe?g|pdf|png|svg|webp)(\?|#|$)/i;
+  var BAD_URL_RE = /(favicon|apple-touch-icon|\/emoji\/|wp-smiley|\/fusion-gfonts\/|\.woff2?|\.ttf|\.otf|googletagmanager|google-analytics|facebook|naver|kakao|beusable|analytics|pixel)/i;
+
+  function absoluteUrl(value, baseUrl) {
+    if (!value || typeof value !== "string") return "";
+    var clean = value.trim().replace(/&amp;/g, "&");
+    if (!clean || clean.indexOf("data:") === 0 || clean.indexOf("javascript:") === 0) return "";
+    if (clean.indexOf("//") === 0) clean = window.location.protocol + clean;
+    try {
+      return new URL(clean, baseUrl || window.location.href).href;
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function normalizeUrl(value) {
+    var url = absoluteUrl(value);
+    if (!url) return "";
+    try {
+      var parsed = new URL(url);
+      parsed.hash = "";
+      return parsed.href;
+    } catch (error) {
+      return url.split("#")[0];
+    }
+  }
+
+  function isAssetUrl(url) {
+    return IMAGE_EXT_RE.test(url) || PDF_EXT_RE.test(url);
+  }
+
+  function assetKind(url) {
+    if (PDF_EXT_RE.test(url)) return "pdf";
+    if (IMAGE_EXT_RE.test(url)) return "image";
+    return "unknown";
+  }
+
+  function decodeEntities(value) {
+    var el = document.createElement("textarea");
+    el.innerHTML = value || "";
+    return el.value;
+  }
+
+  function safeTitle(value) {
+    var text = decodeEntities(String(value || "untitled"))
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 80);
+    return (text || "untitled")
+      .replace(/[\\/:*?"<>|#%{}~&]+/g, "_")
+      .replace(/\s/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  function pad(number) {
+    return String(number).padStart(2, "0");
+  }
+
+  function timestamp() {
+    var now = new Date();
+    return [
+      now.getFullYear(),
+      pad(now.getMonth() + 1),
+      pad(now.getDate())
+    ].join("") + "_" + [pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds())].join("");
+  }
+
+  function extensionFromUrl(url, kind) {
+    try {
+      var pathname = new URL(url).pathname;
+      var match = pathname.match(/\.([a-z0-9]{2,5})$/i);
+      if (match) return match[1].toLowerCase();
+    } catch (error) {}
+    return kind === "pdf" ? "pdf" : "jpg";
+  }
+
+  function makeFilename(site, title, index, url, kind, runId) {
+    return [
+      safeTitle(site || "site"),
+      runId,
+      String(index + 1).padStart(3, "0"),
+      safeTitle(title || "posting")
+    ].join("_") + "." + extensionFromUrl(url, kind);
+  }
+
+  function splitSrcset(value) {
+    if (!value) return [];
+    return value.split(",").map(function (item) {
+      return item.trim().split(/\s+/)[0];
+    }).filter(Boolean);
+  }
+
+  function bestSrcsetUrl(value, baseUrl) {
+    var candidates = splitSrcset(value).map(function (url) {
+      return absoluteUrl(url, baseUrl);
+    }).filter(Boolean);
+    return candidates[candidates.length - 1] || "";
+  }
+
+  function pushAsset(list, input) {
+    var assetUrl = absoluteUrl(input.assetUrl, input.sourcePageUrl || window.location.href);
+    if (!assetUrl || BAD_URL_RE.test(assetUrl)) return;
+    if (!isAssetUrl(assetUrl) && input.assetKind !== "unknown") return;
+    list.push({
+      site: input.site || "generic",
+      sourcePageUrl: input.sourcePageUrl || window.location.href,
+      postingUrl: input.postingUrl || input.sourcePageUrl || window.location.href,
+      postingTitle: input.postingTitle || document.title || "",
+      assetUrl: assetUrl,
+      assetKind: input.assetKind || assetKind(assetUrl),
+      assetSource: input.assetSource || "unknown",
+      filename: input.filename || "",
+      selected: input.selected !== false
+    });
+  }
+
+  function dedupeAssets(assets) {
+    var seen = new Set();
+    return assets.filter(function (asset) {
+      var key = normalizeUrl(asset.assetUrl);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function addFilenames(assets, site, runId) {
+    return assets.map(function (asset, index) {
+      return Object.assign({}, asset, {
+        filename: asset.filename || makeFilename(site, asset.postingTitle, index, asset.assetUrl, asset.assetKind, runId)
+      });
+    });
+  }
+
+  function getBackgroundUrls() {
+    var urls = [];
+    Array.from(document.querySelectorAll("body *")).forEach(function (el) {
+      var style = window.getComputedStyle(el);
+      var bg = style && style.backgroundImage;
+      if (!bg || bg === "none") return;
+      var matches = bg.match(/url\((["']?)(.*?)\1\)/g) || [];
+      matches.forEach(function (match) {
+        var url = match.replace(/^url\((["']?)/, "").replace(/(["']?)\)$/, "");
+        urls.push(url);
+      });
+    });
+    return urls;
+  }
+
+  function collectDomAssets(options) {
+    var site = (options && options.site) || "generic";
+    var sourcePageUrl = (options && options.sourcePageUrl) || window.location.href;
+    var postingTitle = (options && options.postingTitle) || document.title || "";
+    var list = [];
+
+    Array.from(document.querySelectorAll("img")).forEach(function (img) {
+      var width = Number(img.naturalWidth || img.width || 0);
+      var height = Number(img.naturalHeight || img.height || 0);
+      if ((width && width <= 24) || (height && height <= 24)) return;
+      pushAsset(list, {
+        site: site,
+        sourcePageUrl: sourcePageUrl,
+        postingUrl: sourcePageUrl,
+        postingTitle: img.alt || postingTitle,
+        assetUrl: img.getAttribute("data-orig-file") || img.getAttribute("data-large-file") || img.currentSrc || img.src,
+        assetSource: "dom.img"
+      });
+      var best = bestSrcsetUrl(img.getAttribute("srcset"), sourcePageUrl);
+      if (best) {
+        pushAsset(list, {
+          site: site,
+          sourcePageUrl: sourcePageUrl,
+          postingUrl: sourcePageUrl,
+          postingTitle: img.alt || postingTitle,
+          assetUrl: best,
+          assetSource: "dom.img.srcset"
+        });
+      }
+    });
+
+    Array.from(document.querySelectorAll("source[srcset]")).forEach(function (source) {
+      var best = bestSrcsetUrl(source.getAttribute("srcset"), sourcePageUrl);
+      if (best) {
+        pushAsset(list, {
+          site: site,
+          sourcePageUrl: sourcePageUrl,
+          postingUrl: sourcePageUrl,
+          postingTitle: postingTitle,
+          assetUrl: best,
+          assetSource: "dom.source.srcset"
+        });
+      }
+    });
+
+    Array.from(document.querySelectorAll("a[href]")).forEach(function (anchor) {
+      var href = absoluteUrl(anchor.getAttribute("href"), sourcePageUrl);
+      if (!href || !isAssetUrl(href)) return;
+      pushAsset(list, {
+        site: site,
+        sourcePageUrl: sourcePageUrl,
+        postingUrl: sourcePageUrl,
+        postingTitle: anchor.textContent.trim() || postingTitle,
+        assetUrl: href,
+        assetSource: "dom.a.href"
+      });
+    });
+
+    getBackgroundUrls().forEach(function (url) {
+      pushAsset(list, {
+        site: site,
+        sourcePageUrl: sourcePageUrl,
+        postingUrl: sourcePageUrl,
+        postingTitle: postingTitle,
+        assetUrl: url,
+        assetSource: "dom.background"
+      });
+    });
+
+    return dedupeAssets(list);
+  }
+
+  function extractAssetsFromHtml(html, pageUrl, site, postingTitle, assetSourcePrefix) {
+    var doc = new DOMParser().parseFromString(html, "text/html");
+    var list = [];
+    Array.from(doc.querySelectorAll("img")).forEach(function (img) {
+      pushAsset(list, {
+        site: site,
+        sourcePageUrl: pageUrl,
+        postingUrl: pageUrl,
+        postingTitle: img.alt || postingTitle,
+        assetUrl: img.getAttribute("data-orig-file") || img.getAttribute("data-large-file") || img.getAttribute("src"),
+        assetSource: assetSourcePrefix + ".img"
+      });
+      var best = bestSrcsetUrl(img.getAttribute("srcset"), pageUrl);
+      if (best) {
+        pushAsset(list, {
+          site: site,
+          sourcePageUrl: pageUrl,
+          postingUrl: pageUrl,
+          postingTitle: img.alt || postingTitle,
+          assetUrl: best,
+          assetSource: assetSourcePrefix + ".img.srcset"
+        });
+      }
+    });
+    Array.from(doc.querySelectorAll("a[href]")).forEach(function (anchor) {
+      var href = absoluteUrl(anchor.getAttribute("href"), pageUrl);
+      if (!href || !isAssetUrl(href)) return;
+      pushAsset(list, {
+        site: site,
+        sourcePageUrl: pageUrl,
+        postingUrl: pageUrl,
+        postingTitle: anchor.textContent.trim() || postingTitle,
+        assetUrl: href,
+        assetSource: assetSourcePrefix + ".a.href"
+      });
+    });
+    return dedupeAssets(list);
+  }
+
+  function getNestedValue(object, path) {
+    return path.split(".").reduce(function (current, key) {
+      if (current && Object.prototype.hasOwnProperty.call(current, key)) return current[key];
+      return undefined;
+    }, object);
+  }
+
+  function collectJobdaAssetUrls(detail) {
+    var urls = [];
+    [
+      "basicInfo.jobDescriptionImageUrl",
+      "basicInfo.thumbnailImageUrl",
+      "basicInfo.thumbnailUrl",
+      "companyInfo.logoImageUrl"
+    ].forEach(function (path) {
+      var value = getNestedValue(detail, path);
+      if (value) urls.push({ url: value, source: "jobda." + path });
+    });
+
+    var images = getNestedValue(detail, "basicInfo.images");
+    if (Array.isArray(images)) {
+      images.forEach(function (image, index) {
+        if (image && image.fileUrl) urls.push({ url: image.fileUrl, source: "jobda.basicInfo.images[" + index + "].fileUrl" });
+      });
+    }
+
+    return urls;
+  }
+
+  async function fetchJson(url) {
+    var response = await fetch(url, { credentials: "include" });
+    if (!response.ok) throw new Error("HTTP " + response.status + " " + url);
+    return response.json();
+  }
+
+  async function jobdaAdapter() {
+    var site = "jobda";
+    var assets = [];
+    var postings = [];
+    var errors = [];
+    try {
+      var listUrl = "https://api.jobda.im/position?page=0&size=60";
+      var listResponse = await fetchJson(listUrl);
+      var positions = Array.isArray(listResponse.positions) ? listResponse.positions : [];
+      postings = positions.map(function (position) {
+        return {
+          id: position.positionSn,
+          title: position.positionName || position.positionTitle || position.companyName || "jobda-position",
+          url: "https://www.jobda.im/position/" + position.positionSn + "/jd"
+        };
+      }).filter(function (posting) { return !!posting.id; });
+
+      for (var i = 0; i < postings.length; i += 1) {
+        var posting = postings[i];
+        try {
+          var detail = await fetchJson("https://api.jobda.im/v2/position/" + encodeURIComponent(posting.id));
+          collectJobdaAssetUrls(detail).forEach(function (item) {
+            pushAsset(assets, {
+              site: site,
+              sourcePageUrl: window.location.href,
+              postingUrl: posting.url,
+              postingTitle: posting.title,
+              assetUrl: item.url,
+              assetSource: item.source
+            });
+          });
+        } catch (error) {
+          errors.push({ phase: "jobda.detail", postingUrl: posting.url, message: String(error && error.message || error) });
+        }
+      }
+    } catch (error) {
+      errors.push({ phase: "jobda.list", message: String(error && error.message || error) });
+      assets = collectDomAssets({ site: site });
+    }
+    if (!assets.length) {
+      assets = collectDomAssets({ site: site });
+    }
+    return {
+      adapterName: "Jobda",
+      site: site,
+      postings: postings,
+      assets: dedupeAssets(assets),
+      errors: errors,
+      notes: ["Jobda API 실패 또는 CORS 차단 시 DOM fallback 결과만 표시됩니다."]
+    };
+  }
+
+  function getInthisworkCards() {
+    return Array.from(document.querySelectorAll(".dpt-entry")).map(function (entry) {
+      var title = entry.getAttribute("data-title") || "";
+      var id = entry.getAttribute("data-id") || "";
+      var titleLink = entry.querySelector(".dpt-title-link[href], a.dpt-permalink[href], a[href*='/archives/']");
+      var thumb = entry.querySelector("img");
+      return {
+        id: id,
+        title: title || (titleLink ? titleLink.textContent.trim() : ""),
+        url: titleLink ? absoluteUrl(titleLink.getAttribute("href"), window.location.href) : "",
+        thumb: thumb
+      };
+    }).filter(function (card) {
+      return card.url || card.thumb;
+    });
+  }
+
+  async function inthisworkAdapter() {
+    var site = "inthiswork";
+    var assets = [];
+    var errors = [];
+    var cards = getInthisworkCards();
+    var postings = cards.map(function (card) {
+      return { id: card.id, title: card.title, url: card.url };
+    });
+
+    cards.forEach(function (card) {
+      if (!card.thumb) return;
+      ["data-orig-file", "data-large-file", "src"].forEach(function (attr) {
+        var value = card.thumb.getAttribute(attr);
+        if (value) {
+          pushAsset(assets, {
+            site: site,
+            sourcePageUrl: window.location.href,
+            postingUrl: card.url || window.location.href,
+            postingTitle: card.title,
+            assetUrl: value,
+            assetSource: "inthiswork.card." + attr
+          });
+        }
+      });
+      var best = bestSrcsetUrl(card.thumb.getAttribute("srcset"), window.location.href);
+      if (best) {
+        pushAsset(assets, {
+          site: site,
+          sourcePageUrl: window.location.href,
+          postingUrl: card.url || window.location.href,
+          postingTitle: card.title,
+          assetUrl: best,
+          assetSource: "inthiswork.card.srcset"
+        });
+      }
+    });
+
+    var detailCards = cards.filter(function (card) {
+      return /^https:\/\/inthiswork\.com\/archives\/\d+\/?$/.test((card.url || "").split("#")[0]);
+    }).slice(0, 20);
+
+    for (var i = 0; i < detailCards.length; i += 1) {
+      var card = detailCards[i];
+      try {
+        var response = await fetch(card.url, { credentials: "include" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        var html = await response.text();
+        assets = assets.concat(extractAssetsFromHtml(html, card.url, site, card.title, "inthiswork.detail"));
+      } catch (error) {
+        errors.push({ phase: "inthiswork.detail", postingUrl: card.url, message: String(error && error.message || error) });
+      }
+    }
+
+    if (!assets.length) {
+      assets = collectDomAssets({ site: site });
+    }
+
+    return {
+      adapterName: "인디스워크",
+      site: site,
+      postings: postings,
+      assets: dedupeAssets(assets),
+      errors: errors,
+      notes: ["상세 페이지 fetch는 /archives/{id} 링크 최대 20개까지만 시도합니다."]
+    };
+  }
+
+  async function genericAdapter() {
+    return {
+      adapterName: "Generic fallback",
+      site: "generic",
+      postings: [{ id: "", title: document.title, url: window.location.href }],
+      assets: collectDomAssets({ site: "generic" }),
+      errors: [],
+      notes: ["현재 DOM에서 보이는 이미지/PDF만 수집했습니다."]
+    };
+  }
+
+  async function detectAndCollect() {
+    var host = window.location.hostname.replace(/^www\./, "");
+    if (host === "jobda.im" && window.location.pathname.indexOf("/position") === 0) return jobdaAdapter();
+    if (host === "inthiswork.com") return inthisworkAdapter();
+    return genericAdapter();
+  }
+
+  function downloadText(filename, text, mimeType) {
+    var blob = new Blob([text], { type: mimeType || "application/json" });
+    var url = URL.createObjectURL(blob);
+    var anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+      anchor.remove();
+    }, 1000);
+  }
+
+  function sleep(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
+  async function downloadAssets(assets, onProgress) {
+    for (var i = 0; i < assets.length; i += 1) {
+      var asset = assets[i];
+      onProgress(i + 1, assets.length, asset);
+      var anchor = document.createElement("a");
+      anchor.href = asset.assetUrl;
+      anchor.download = asset.filename;
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      await sleep(450);
+    }
+  }
+
+  function manifestFor(result, runId, assets) {
+    return {
+      tool: APP_ID,
+      version: VERSION,
+      runId: runId,
+      collectedAt: new Date().toISOString(),
+      adapterName: result.adapterName,
+      site: result.site,
+      sourcePageUrl: window.location.href,
+      sourcePageTitle: document.title,
+      postingCount: result.postings.length,
+      assetCount: result.assets.length,
+      selectedAssetCount: assets.length,
+      browserNote: "Automatic downloads can be blocked or filename hints can be ignored by the browser or target site. Use assetUrl as the source of truth.",
+      postings: result.postings,
+      assets: result.assets,
+      selectedAssets: assets,
+      errors: result.errors,
+      notes: result.notes
+    };
+  }
+
+  function removeExistingOverlay() {
+    var existing = document.getElementById(APP_ID + "-overlay");
+    if (existing) existing.remove();
+  }
+
+  function createOverlayShell() {
+    removeExistingOverlay();
+    var root = document.createElement("div");
+    root.id = APP_ID + "-overlay";
+    root.innerHTML = [
+      "<style>",
+      "#" + APP_ID + "-overlay{position:fixed;z-index:2147483647;top:16px;right:16px;width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px);background:#fff;color:#15171a;border:1px solid #d9dee6;border-radius:8px;box-shadow:0 18px 55px rgba(0,0,0,.22);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',Arial,sans-serif;font-size:13px;line-height:1.45;overflow:hidden}",
+      "#" + APP_ID + "-overlay *{box-sizing:border-box}",
+      "#" + APP_ID + "-overlay .nc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #e5e8ee;background:#f8fafc}",
+      "#" + APP_ID + "-overlay .nc-title{font-size:15px;font-weight:800}",
+      "#" + APP_ID + "-overlay .nc-close{width:30px;height:30px;border:0;border-radius:5px;background:#eef1f5;color:#20242a;cursor:pointer;font-weight:800}",
+      "#" + APP_ID + "-overlay .nc-body{padding:14px 16px;overflow:auto;max-height:calc(100vh - 122px)}",
+      "#" + APP_ID + "-overlay .nc-status{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}",
+      "#" + APP_ID + "-overlay .nc-stat{border:1px solid #e5e8ee;border-radius:6px;padding:8px;background:#fbfcfe}",
+      "#" + APP_ID + "-overlay .nc-label{display:block;color:#69717c;font-size:11px}",
+      "#" + APP_ID + "-overlay .nc-value{display:block;font-weight:800;font-size:15px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+      "#" + APP_ID + "-overlay .nc-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}",
+      "#" + APP_ID + "-overlay .nc-btn{min-height:34px;border:0;border-radius:5px;padding:0 11px;background:#2457d6;color:#fff;font-weight:800;cursor:pointer}",
+      "#" + APP_ID + "-overlay .nc-btn.secondary{background:#eef1f5;color:#20242a}",
+      "#" + APP_ID + "-overlay .nc-btn:disabled{opacity:.55;cursor:not-allowed}",
+      "#" + APP_ID + "-overlay .nc-note{padding:10px;border:1px solid #f1d39b;background:#fff8eb;border-radius:6px;color:#5b3a00;margin:8px 0}",
+      "#" + APP_ID + "-overlay .nc-list{display:grid;gap:8px;margin-top:10px}",
+      "#" + APP_ID + "-overlay .nc-item{display:grid;grid-template-columns:22px 1fr;gap:8px;border:1px solid #e5e8ee;border-radius:6px;padding:9px;background:#fff}",
+      "#" + APP_ID + "-overlay .nc-item-title{font-weight:750;word-break:break-word}",
+      "#" + APP_ID + "-overlay .nc-item-url{color:#69717c;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;word-break:break-all;margin-top:3px}",
+      "#" + APP_ID + "-overlay .nc-progress{color:#2457d6;font-weight:750;margin-top:8px}",
+      "@media(max-width:560px){#" + APP_ID + "-overlay{left:12px;right:12px;top:12px;width:auto}#" + APP_ID + "-overlay .nc-status{grid-template-columns:repeat(2,1fr)}}",
+      "</style>",
+      "<div class='nc-head'><div class='nc-title'>공고 이미지 수집</div><button class='nc-close' type='button' aria-label='닫기'>X</button></div>",
+      "<div class='nc-body'><div class='nc-progress'>수집 중입니다...</div></div>"
+    ].join("");
+    document.body.appendChild(root);
+    root.querySelector(".nc-close").addEventListener("click", function () { root.remove(); });
+    return root;
+  }
+
+  function renderResult(root, result, runId) {
+    var assets = addFilenames(dedupeAssets(result.assets), result.site, runId);
+    result.assets = assets;
+    var body = root.querySelector(".nc-body");
+    var downloadable = assets.filter(function (asset) {
+      return asset.assetKind === "image" || asset.assetKind === "pdf";
+    });
+    var errorCount = (result.errors || []).length;
+    body.innerHTML = [
+      "<div class='nc-status'>",
+      "<div class='nc-stat'><span class='nc-label'>어댑터</span><span class='nc-value'></span></div>",
+      "<div class='nc-stat'><span class='nc-label'>공고</span><span class='nc-value'></span></div>",
+      "<div class='nc-stat'><span class='nc-label'>후보</span><span class='nc-value'></span></div>",
+      "<div class='nc-stat'><span class='nc-label'>실패</span><span class='nc-value'></span></div>",
+      "</div>",
+      "<div class='nc-actions'>",
+      "<button class='nc-btn' data-action='download' type='button'>선택 다운로드</button>",
+      "<button class='nc-btn secondary' data-action='manifest' type='button'>manifest 저장</button>",
+      "<button class='nc-btn secondary' data-action='selectAll' type='button'>전체 선택</button>",
+      "<button class='nc-btn secondary' data-action='selectNone' type='button'>선택 해제</button>",
+      "</div>",
+      "<div class='nc-note'>자동 다운로드는 브라우저가 차단할 수 있습니다. manifest의 assetUrl을 최종 원본 목록으로 사용하세요.</div>",
+      result.notes && result.notes.length ? "<div class='nc-note'>" + result.notes.map(escapeHtml).join("<br>") + "</div>" : "",
+      "<div class='nc-progress' data-role='progress'></div>",
+      "<div class='nc-list'></div>"
+    ].join("");
+
+    var values = body.querySelectorAll(".nc-value");
+    values[0].textContent = result.adapterName;
+    values[1].textContent = String(result.postings.length);
+    values[2].textContent = String(downloadable.length);
+    values[3].textContent = String(errorCount);
+
+    var list = body.querySelector(".nc-list");
+    if (!assets.length) {
+      list.innerHTML = "<div class='nc-note'>수집된 이미지/PDF 후보가 없습니다.</div>";
+    } else {
+      assets.forEach(function (asset, index) {
+        var item = document.createElement("label");
+        item.className = "nc-item";
+        item.innerHTML = [
+          "<input type='checkbox' data-index='" + index + "'" + (asset.selected ? " checked" : "") + ">",
+          "<div>",
+          "<div class='nc-item-title'></div>",
+          "<div class='nc-item-url'></div>",
+          "<div class='nc-item-url'></div>",
+          "</div>"
+        ].join("");
+        item.querySelector(".nc-item-title").textContent = asset.postingTitle || asset.filename;
+        item.querySelectorAll(".nc-item-url")[0].textContent = asset.assetKind + " | " + asset.assetSource + " | " + asset.filename;
+        item.querySelectorAll(".nc-item-url")[1].textContent = asset.assetUrl;
+        list.appendChild(item);
+      });
+    }
+
+    function selectedAssets() {
+      return Array.from(body.querySelectorAll("input[type='checkbox'][data-index]:checked")).map(function (checkbox) {
+        return assets[Number(checkbox.getAttribute("data-index"))];
+      });
+    }
+
+    body.querySelector("[data-action='selectAll']").addEventListener("click", function () {
+      body.querySelectorAll("input[type='checkbox'][data-index]").forEach(function (checkbox) { checkbox.checked = true; });
+    });
+
+    body.querySelector("[data-action='selectNone']").addEventListener("click", function () {
+      body.querySelectorAll("input[type='checkbox'][data-index]").forEach(function (checkbox) { checkbox.checked = false; });
+    });
+
+    body.querySelector("[data-action='manifest']").addEventListener("click", function () {
+      var manifest = manifestFor(result, runId, selectedAssets());
+      downloadText(result.site + "_" + runId + "_manifest.json", JSON.stringify(manifest, null, 2), "application/json");
+    });
+
+    body.querySelector("[data-action='download']").addEventListener("click", async function (event) {
+      var selected = selectedAssets();
+      var progress = body.querySelector("[data-role='progress']");
+      if (!selected.length) {
+        progress.textContent = "선택된 항목이 없습니다.";
+        return;
+      }
+      event.currentTarget.disabled = true;
+      await downloadAssets(selected, function (current, total, asset) {
+        progress.textContent = "다운로드 시도 중 " + current + " / " + total + ": " + asset.filename;
+      });
+      progress.textContent = "다운로드 시도가 끝났습니다. 일부 항목은 브라우저 정책상 차단될 수 있습니다.";
+      event.currentTarget.disabled = false;
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, function (char) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char];
+    });
+  }
+
+  var root = createOverlayShell();
+  var runId = timestamp();
+  try {
+    var result = await detectAndCollect();
+    renderResult(root, result, runId);
+  } catch (error) {
+    root.querySelector(".nc-body").innerHTML = "<div class='nc-note'>수집 중 오류가 발생했습니다: " + escapeHtml(error && error.message || error) + "</div>";
+  }
+})();
+  </script>
+
+  <script>
+    (function () {
+      var source = document.getElementById("collector-source").textContent.trim();
+      var bookmarklet = "javascript:" + encodeURIComponent(source);
+      var link = document.getElementById("bookmarkletLink");
+      var textarea = document.getElementById("bookmarkletCode");
+      var copy = document.getElementById("copyCode");
+      var status = document.getElementById("copyStatus");
+
+      link.href = bookmarklet;
+      textarea.value = bookmarklet;
+
+      copy.addEventListener("click", async function () {
+        try {
+          await navigator.clipboard.writeText(bookmarklet);
+          status.textContent = "복사되었습니다.";
+        } catch (error) {
+          textarea.focus();
+          textarea.select();
+          document.execCommand("copy");
+          status.textContent = "선택된 코드를 복사했습니다.";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
