@@ -1,0 +1,1317 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#13AF70">
+<title>냉장고 탐정</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  font-family:var(--rd-font-sans);
+  background:var(--rd-gray-100);
+  color:var(--rd-gray-800);
+  -webkit-font-smoothing:antialiased;
+  line-height:var(--rd-leading-normal);
+  height:100%;
+  overflow:hidden;
+}
+
+/* ── App shell ─────────────────────────────────────────────── */
+#app{
+  max-width:var(--rd-mobile-max);
+  margin:0 auto;
+  background:var(--rd-white);
+  min-height:100svh;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* Screens */
+.screen{
+  display:none;
+  flex:1;
+  flex-direction:column;
+  overflow:hidden;
+  height:100svh;
+}
+.screen.active{display:flex;}
+
+/* Scrollable body area */
+.scroll-body{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.app-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid var(--rd-gray-100);
+  background:var(--rd-white);
+  flex-shrink:0;
+  min-height:52px;
+}
+.app-header .icon-btn{
+  width:36px;height:36px;
+  border-radius:var(--rd-radius-full);
+  background:var(--rd-gray-100);
+  border:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--rd-gray-700);
+  transition:background var(--rd-duration) var(--rd-easing);
+}
+.app-header .icon-btn:active{background:var(--rd-gray-200);}
+.app-header .title{
+  font-size:var(--rd-text-sm);
+  font-weight:var(--rd-weight-bold);
+  color:var(--rd-gray-800);
+}
+.app-header .title-center{
+  font-size:16px;font-weight:700;
+  color:var(--rd-gray-800);
+  display:flex;align-items:center;gap:4px;
+}
+.app-header .title-center i{font-style:normal;color:var(--rd-hero-violet);}
+.notif-btn{
+  position:relative;width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  border:0;background:transparent;cursor:pointer;color:var(--rd-gray-700);
+}
+.notif-badge{
+  position:absolute;top:3px;right:3px;
+  width:15px;height:15px;border-radius:50%;
+  background:var(--rd-primary);color:var(--rd-white);
+  font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--rd-white);
+}
+.spacer{width:36px;}
+
+/* ── Bottom Nav ────────────────────────────────────────────── */
+.bottom-nav{
+  position:relative;
+  background:var(--rd-white);
+  border-top:1px solid var(--rd-gray-100);
+  box-shadow:var(--rd-shadow-nav);
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  align-items:center;
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+  min-height:60px;
+  flex-shrink:0;
+  z-index:10;
+}
+.nav-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;border:0;background:transparent;cursor:pointer;
+  color:var(--rd-gray-400);
+  width:100%;padding:4px 0;
+  transition:color var(--rd-duration) var(--rd-easing);
+}
+.nav-btn.active{color:var(--rd-primary);}
+.nav-btn span{font-size:10px;font-weight:500;}
+.nav-fab-wrap{display:flex;justify-content:center;align-items:flex-start;}
+.nav-fab{
+  width:52px;height:52px;
+  margin-top:-20px;
+  border-radius:50%;
+  background:var(--rd-primary);
+  color:var(--rd-white);
+  display:flex;align-items:center;justify-content:center;
+  border:4px solid var(--rd-white);
+  box-shadow:var(--rd-shadow-fab);
+  cursor:pointer;
+  transition:transform var(--rd-duration) var(--rd-easing);
+}
+.nav-fab:active{transform:scale(var(--rd-press-scale-tight));}
+
+/* ── Hero Card ─────────────────────────────────────────────── */
+.hero-card{
+  position:relative;
+  border-radius:var(--rd-radius-3xl);
+  padding:var(--rd-space-4);
+  overflow:hidden;
+  background:linear-gradient(160deg,var(--rd-hero-bg-1) 0%,var(--rd-hero-bg-2) 40%,var(--rd-hero-bg-3) 100%);
+  border:1px solid rgba(229,231,235,0.9);
+  margin:16px 16px 0;
+}
+.hero-blobs{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.blob{position:absolute;border-radius:50%;filter:blur(32px);opacity:.55;}
+.blob-a{width:130px;height:130px;background:#D7C7FF;top:-30px;right:-20px;}
+.blob-b{width:110px;height:110px;background:#BFEBD4;bottom:-20px;left:20px;}
+.hero-top{position:relative;display:flex;align-items:flex-start;gap:12px;}
+.hero-mascot{width:88px;height:88px;object-fit:contain;flex-shrink:0;}
+.hero-text{flex:1;padding-top:4px;}
+.hero-overline{
+  font-size:10px;font-weight:600;
+  color:var(--rd-hero-violet-soft);
+  letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:4px;
+}
+.hero-title{
+  font-size:var(--rd-text-base);
+  font-weight:var(--rd-weight-bold);
+  color:var(--rd-gray-800);
+  line-height:1.3;
+}
+.hero-sub{
+  font-size:var(--rd-text-xs);
+  color:var(--rd-gray-500);
+  margin-top:4px;
+  line-height:1.5;
+}
+.hero-btns{
+  position:relative;
+  display:flex;gap:8px;margin-top:14px;
+}
+.hero-sparkles{
+  position:absolute;top:-6px;left:-6px;
+  color:var(--rd-hero-violet-soft);
+  font-size:11px;pointer-events:none;
+  user-select:none;
+}
+
+/* ── Section layout ────────────────────────────────────────── */
+.section{padding:0 16px;margin-top:24px;}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.section-title{
+  font-size:var(--rd-text-base);
+  font-weight:var(--rd-weight-bold);
+  color:var(--rd-gray-800);
+}
+.see-all{
+  font-size:var(--rd-text-xs);
+  color:var(--rd-gray-400);
+  font-weight:var(--rd-weight-medium);
+  background:none;border:0;cursor:pointer;
+}
+
+/* ── Ingredient chips horizontal scroll ───────────────────── */
+.ing-scroll{
+  display:flex;gap:10px;
+  overflow-x:auto;padding-bottom:4px;
+  scrollbar-width:none;
+}
+.ing-scroll::-webkit-scrollbar{display:none;}
+.ing-chip{
+  display:flex;flex-direction:column;align-items:center;
+  gap:4px;flex-shrink:0;
+  width:80px;background:var(--rd-white);
+  border:1px solid var(--rd-gray-200);border-radius:16px;
+  box-shadow:var(--rd-shadow-sm);padding:10px 8px;
+  cursor:pointer;
+  transition:transform var(--rd-duration) var(--rd-easing);
+}
+.ing-chip:active{transform:scale(var(--rd-press-scale-tight));}
+.ing-chip .emoji{font-size:24px;line-height:1;}
+.ing-chip .name{font-size:11.5px;font-weight:500;color:var(--rd-gray-700);}
+.expiry-badge{
+  font-size:10px;font-weight:700;
+  border:1px solid;border-radius:var(--rd-radius-full);
+  padding:1px 7px;margin-top:2px;
+}
+.badge-urgent{background:var(--rd-urgent-bg);color:var(--rd-urgent-fg);border-color:var(--rd-urgent-bd);}
+.badge-caution{background:var(--rd-caution-bg);color:var(--rd-caution-fg);border-color:var(--rd-caution-bd);}
+.badge-safe{background:var(--rd-safe-bg);color:var(--rd-safe-fg);border-color:var(--rd-safe-bd);}
+
+/* ── Recipe cards ──────────────────────────────────────────── */
+.recipe-scroll{
+  display:flex;gap:12px;
+  overflow-x:auto;padding-bottom:4px;
+  scrollbar-width:none;
+}
+.recipe-scroll::-webkit-scrollbar{display:none;}
+.recipe-card{
+  flex-shrink:0;width:148px;
+  background:var(--rd-white);
+  border:1px solid var(--rd-gray-200);border-radius:16px;
+  box-shadow:var(--rd-shadow-sm);overflow:hidden;
+  cursor:pointer;
+  transition:transform var(--rd-duration) var(--rd-easing);
+}
+.recipe-card:active{transform:scale(var(--rd-press-scale-tight));}
+.recipe-thumb{
+  height:96px;
+  background:linear-gradient(135deg,#F9F5FF,#ECFDF5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;position:relative;
+}
+.recipe-match-chip{
+  position:absolute;top:7px;left:7px;
+  font-size:9.5px;font-weight:700;
+  color:#0E8F5B;background:rgba(255,255,255,.9);
+  border:1px solid #BBF7D0;border-radius:9999px;
+  padding:2px 8px;
+}
+.recipe-meta{padding:8px 10px 10px;}
+.recipe-name{
+  font-size:12.5px;font-weight:700;
+  color:var(--rd-gray-800);line-height:1.3;
+}
+.recipe-pills{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;}
+.recipe-pill{
+  font-size:10px;color:var(--rd-gray-500);
+  background:var(--rd-gray-100);
+  border-radius:9999px;padding:1px 7px;font-weight:500;
+}
+
+/* ── Detective Office section ──────────────────────────────── */
+.detective-office{
+  margin:24px 16px 0;
+  border-radius:24px;
+  overflow:hidden;
+  border:1px solid var(--rd-gray-200);
+  box-shadow:var(--rd-shadow-sm);
+  position:relative;
+}
+.office-bg{
+  height:180px;
+  background-image:url('assets/detective_kitchen.png');
+  background-size:cover;background-position:center bottom;
+  position:relative;
+}
+.office-fade{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.9) 0%,rgba(255,255,255,0) 35%);
+}
+.office-content{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:16px;
+  display:flex;align-items:flex-end;gap:12px;
+}
+.office-mascot{width:80px;height:80px;object-fit:contain;flex-shrink:0;}
+.speech-bubble{
+  flex:1;
+  background:var(--rd-white);
+  border:1px solid var(--rd-gray-200);
+  border-radius:16px 16px 16px 4px;
+  padding:10px 13px;
+  font-size:13px;
+  color:var(--rd-gray-700);
+  line-height:1.5;
+  box-shadow:var(--rd-shadow-sm);
+  margin-bottom:4px;
+}
+.office-btn-area{
+  padding:14px 16px;
+  background:var(--rd-white);
+  border-top:1px solid var(--rd-gray-100);
+}
+
+/* ── Ingredient list (Rescue) ──────────────────────────────── */
+.ing-list-item{
+  display:flex;align-items:center;
+  padding:14px 16px;
+  border-bottom:1px solid var(--rd-gray-100);
+  gap:14px;
+}
+.ing-list-emoji{font-size:32px;flex-shrink:0;}
+.ing-list-info{flex:1;}
+.ing-list-name{font-size:14px;font-weight:600;color:var(--rd-gray-800);}
+.ing-list-sub{font-size:12px;color:var(--rd-gray-400);margin-top:2px;}
+
+/* ── Alert banner ──────────────────────────────────────────── */
+.alert-banner{
+  margin:16px 16px 0;
+  background:var(--rd-urgent-bg);
+  border:1px solid var(--rd-urgent-bd);
+  border-radius:16px;
+  padding:12px 14px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--rd-gray-700);
+}
+.alert-banner .icon{font-size:20px;flex-shrink:0;}
+
+/* ── Chat screen ───────────────────────────────────────────── */
+.chat-header-sub{
+  font-size:11px;color:var(--rd-gray-400);
+  text-align:center;margin-top:2px;
+}
+.chat-messages{
+  flex:1;overflow-y:auto;padding:16px 16px 12px;
+  display:flex;flex-direction:column;gap:12px;
+  -webkit-overflow-scrolling:touch;
+}
+.chat-ai{display:flex;align-items:flex-start;gap:10px;}
+.chat-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--rd-primary-light);overflow:hidden;flex-shrink:0;
+  margin-top:2px;
+}
+.chat-avatar img{width:100%;height:100%;object-fit:cover;}
+.bubble-ai{
+  max-width:280px;
+  background:var(--rd-gray-100);
+  border-radius:4px 16px 16px 16px;
+  padding:9px 13px;
+  font-size:13.5px;color:var(--rd-gray-800);
+  line-height:1.5;
+}
+.bubble-ai b{color:var(--rd-gray-900);font-weight:700;}
+.chat-user{display:flex;justify-content:flex-end;}
+.bubble-user{
+  max-width:280px;
+  background:var(--rd-primary);color:var(--rd-white);
+  border-radius:16px 16px 4px 16px;
+  padding:9px 13px;font-size:13.5px;line-height:1.5;
+}
+.typing-indicator{
+  display:inline-flex;gap:4px;align-items:center;padding:4px 0;
+}
+.typing-indicator span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--rd-gray-400);
+  animation:bounce 1.2s infinite;
+}
+.typing-indicator span:nth-child(2){animation-delay:.2s;}
+.typing-indicator span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+
+/* Recipe strip in chat */
+.recipe-strip{display:flex;gap:8px;margin-left:42px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.recipe-strip::-webkit-scrollbar{display:none;}
+.r-chip{
+  flex-shrink:0;width:120px;
+  background:var(--rd-white);
+  border:1px solid var(--rd-gray-100);
+  border-radius:14px;overflow:hidden;
+  box-shadow:var(--rd-shadow-sm);cursor:pointer;
+}
+.r-chip .th{height:54px;background:linear-gradient(135deg,#F9F5FF,#ECFDF5);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.r-chip .nm{font-size:11px;font-weight:600;color:var(--rd-gray-800);padding:5px 7px 1px;line-height:1.3;}
+.r-chip .mt{font-size:9.5px;color:var(--rd-gray-400);padding:0 7px 6px;}
+
+/* Chat chips row */
+.chat-chips-row{
+  padding:8px 16px 8px;
+  overflow-x:auto;display:flex;gap:6px;
+  scrollbar-width:none;flex-shrink:0;
+  border-top:1px solid var(--rd-gray-100);
+}
+.chat-chips-row::-webkit-scrollbar{display:none;}
+.chat-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:5px 12px;border-radius:var(--rd-radius-full);
+  font-size:12px;font-weight:500;
+  background:var(--rd-gray-100);color:var(--rd-gray-500);
+  border:0;cursor:pointer;white-space:nowrap;
+  transition:background var(--rd-duration) var(--rd-easing),color var(--rd-duration) var(--rd-easing);
+}
+.chat-chip.selected{background:var(--rd-primary);color:var(--rd-white);}
+
+/* Chat composer */
+.chat-composer{
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  background:var(--rd-white);
+  border-top:1px solid var(--rd-gray-100);
+  display:flex;gap:10px;align-items:center;
+  flex-shrink:0;
+}
+.chat-input{
+  flex:1;background:var(--rd-gray-100);
+  border:0;border-radius:var(--rd-radius-full);
+  padding:10px 16px;
+  font-size:var(--rd-text-sm);color:var(--rd-gray-800);
+  font-family:inherit;outline:none;
+}
+.chat-input::placeholder{color:var(--rd-gray-400);}
+.send-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--rd-primary);color:var(--rd-white);
+  border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:transform var(--rd-duration) var(--rd-easing);
+}
+.send-btn:active{transform:scale(var(--rd-press-scale-tight));}
+
+/* ── AI Recognition screen ─────────────────────────────────── */
+.drop-zone{
+  margin:20px 16px 0;
+  border:2px dashed var(--rd-gray-200);
+  border-radius:24px;background:var(--rd-gray-50);
+  min-height:220px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;
+  cursor:pointer;
+  transition:border-color var(--rd-duration) var(--rd-easing);
+}
+.drop-zone:hover{border-color:var(--rd-primary);}
+.drop-zone-icon{font-size:48px;}
+.drop-zone-text{font-size:14px;color:var(--rd-gray-500);text-align:center;line-height:1.6;}
+.drop-zone-link{color:var(--rd-primary);font-weight:600;}
+
+/* AI result chips */
+.ai-result{margin:20px 16px 0;}
+.ai-result-title{font-size:14px;font-weight:700;color:var(--rd-gray-800);margin-bottom:10px;}
+.ai-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.ai-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;border-radius:var(--rd-radius-full);
+  background:var(--rd-primary-light);
+  font-size:13px;font-weight:500;color:var(--rd-primary);
+  border:0;cursor:pointer;
+}
+.ai-chip .rm{
+  width:16px;height:16px;border-radius:50%;
+  background:rgba(19,175,112,.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:var(--rd-primary);
+}
+
+/* ── Recipe Detail screen ──────────────────────────────────── */
+.recipe-detail-hero{
+  height:200px;
+  background:linear-gradient(135deg,#F9F5FF,#ECFDF5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:80px;flex-shrink:0;
+}
+.recipe-detail-info{padding:20px 16px 0;}
+.recipe-detail-name{
+  font-size:var(--rd-text-xl);
+  font-weight:var(--rd-weight-bold);
+  color:var(--rd-gray-900);
+  line-height:1.3;
+}
+.recipe-detail-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.recipe-detail-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:5px 12px;border-radius:var(--rd-radius-full);
+  background:var(--rd-primary-light);color:var(--rd-primary);
+  font-size:12px;font-weight:500;
+}
+.recipe-detail-section{padding:0 16px;margin-top:24px;}
+.recipe-detail-section-title{
+  font-size:var(--rd-text-sm);font-weight:700;
+  color:var(--rd-gray-800);margin-bottom:12px;
+  display:flex;align-items:center;gap:6px;
+}
+.ing-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--rd-gray-100);
+}
+.ing-row:last-child{border-bottom:0;}
+.ing-row .emoji{font-size:22px;width:32px;text-align:center;}
+.ing-row .nm{flex:1;font-size:14px;color:var(--rd-gray-700);}
+.ing-row .amt{font-size:13px;color:var(--rd-gray-400);font-weight:500;}
+
+/* Step list */
+.step-item{
+  display:flex;gap:14px;padding:10px 0;
+  border-bottom:1px solid var(--rd-gray-100);
+}
+.step-item:last-child{border-bottom:0;}
+.step-num{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--rd-primary);color:var(--rd-white);
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;
+}
+.step-text{font-size:14px;color:var(--rd-gray-700);line-height:1.6;flex:1;}
+
+/* ── Cooking screen ────────────────────────────────────────── */
+.cooking-progress{
+  padding:16px 16px 0;flex-shrink:0;
+}
+.step-bars{display:flex;gap:6px;margin-bottom:8px;}
+.step-bar{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.step-bar-track{
+  height:6px;width:100%;border-radius:9999px;
+  background:var(--rd-gray-200);
+}
+.step-bar-track.done{background:var(--rd-primary);}
+.step-bar-label{font-size:10px;font-weight:500;color:var(--rd-gray-300);}
+.step-bar-label.done{color:var(--rd-primary);}
+.step-bar-label.active{color:var(--rd-primary);}
+
+.phase-nodes{
+  display:flex;align-items:center;
+  padding:0 8px;margin-top:12px;
+}
+.phase-node{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;}
+.phase-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.phase-dot.done{background:var(--rd-primary);}
+.phase-dot.curr{background:var(--rd-white);border:2px solid var(--rd-primary);}
+.phase-dot.curr .dot-inner{width:8px;height:8px;border-radius:50%;background:var(--rd-primary);}
+.phase-dot.pend{background:var(--rd-gray-200);}
+.phase-line{flex:1;height:2px;background:var(--rd-gray-200);margin:0 4px;margin-bottom:22px;}
+.phase-line.done{background:var(--rd-primary);}
+.phase-label{font-size:10px;font-weight:500;color:var(--rd-gray-700);}
+.phase-label.pending{color:var(--rd-gray-400);}
+
+.cooking-timer{
+  margin:28px 16px 0;
+  background:var(--rd-white);
+  border:1px solid var(--rd-gray-200);
+  border-radius:24px;
+  box-shadow:var(--rd-shadow-sm);
+  padding:28px 20px 24px;
+  text-align:center;
+}
+.timer-label{font-size:12px;color:var(--rd-gray-400);font-weight:500;letter-spacing:.04em;margin-bottom:10px;}
+.timer-display{
+  font-family:var(--rd-font-mono);
+  font-size:var(--rd-text-6xl);
+  font-weight:var(--rd-weight-bold);
+  color:var(--rd-gray-900);
+  line-height:1;letter-spacing:-0.02em;
+  font-feature-settings:"tnum";
+}
+.timer-controls{display:flex;gap:12px;justify-content:center;margin-top:20px;}
+.timer-btn{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--rd-gray-100);
+  border:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--rd-gray-700);
+  transition:background var(--rd-duration) var(--rd-easing),transform var(--rd-duration) var(--rd-easing);
+}
+.timer-btn:active{background:var(--rd-gray-200);transform:scale(var(--rd-press-scale));}
+.timer-btn.primary{background:var(--rd-primary);color:var(--rd-white);}
+.timer-btn.primary:active{background:var(--rd-primary-press);}
+
+.cooking-step-card{
+  margin:20px 16px 0;
+  background:var(--rd-white);
+  border:1px solid var(--rd-gray-200);
+  border-radius:16px;
+  box-shadow:var(--rd-shadow-sm);
+  padding:16px;
+}
+.cooking-step-label{
+  font-size:10px;font-weight:600;letter-spacing:.06em;
+  color:var(--rd-primary);text-transform:uppercase;margin-bottom:8px;
+}
+.cooking-step-text{
+  font-size:15px;color:var(--rd-gray-700);line-height:1.65;
+}
+
+/* ── Footer CTA ────────────────────────────────────────────── */
+.footer-cta{
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:var(--rd-white);
+  border-top:1px solid var(--rd-gray-100);
+  flex-shrink:0;
+}
+
+/* ── Buttons (from CSS) ────────────────────────────────────── */
+button{cursor:pointer;}
+
+/* Mascot bob animation */
+.mascot-bob{animation:mascot-bob 3.6s ease-in-out infinite;}
+@keyframes mascot-bob{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-4px);}
+}
+
+/* Skeleton loading pulse */
+.skeleton{
+  background:linear-gradient(90deg,var(--rd-gray-100) 25%,var(--rd-gray-200) 50%,var(--rd-gray-100) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite;
+  border-radius:8px;
+}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* Completion screen */
+.completion{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:32px 24px;text-align:center;
+}
+.completion-mascot{width:140px;height:140px;object-fit:contain;margin-bottom:20px;}
+.completion-title{
+  font-size:var(--rd-text-xl);font-weight:var(--rd-weight-bold);
+  color:var(--rd-gray-800);margin-bottom:8px;
+}
+.completion-sub{font-size:var(--rd-text-sm);color:var(--rd-gray-500);line-height:1.6;}
+.completion-btns{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:28px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN 1 — HOME
+══════════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-home">
+  <header class="app-header">
+    <span class="spacer"></span>
+    <div class="title-center">냉장고 탐정 <i>✨</i></div>
+    <button class="notif-btn" aria-label="알림">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+      <span class="notif-badge">3</span>
+    </button>
+  </header>
+
+  <div class="scroll-body" style="padding-bottom:80px">
+    <!-- Hero Card -->
+    <div class="hero-card">
+      <div class="hero-blobs"><div class="blob blob-a"></div><div class="blob blob-b"></div></div>
+      <div class="hero-sparkles">✦ ✦</div>
+      <div class="hero-top">
+        <img class="hero-mascot" src="assets/detective_report.png" alt="냉탐이">
+        <div class="hero-text">
+          <div class="hero-overline">REFRIGERATOR DETECTIVE</div>
+          <div class="hero-title">안녕하세요, 지민님 😊</div>
+          <div class="hero-sub">이번 달 냉장고 탐정이 약<br><strong>25,800원</strong>을 아껴드렸어요!</div>
+        </div>
+      </div>
+      <div class="hero-btns">
+        <button class="rd-btn-primary" style="font-size:13px;padding:.75rem;border-radius:14px;flex:1" onclick="navigate('rescue')">
+          🥬 구조대 목록
+        </button>
+        <button class="rd-btn-dark" style="font-size:13px;padding:.75rem;border-radius:14px;flex:1" onclick="navigate('chat')">
+          🕵️ 탐정과 레시피 찾기
+        </button>
+      </div>
+    </div>
+
+    <!-- Alert banner -->
+    <div class="alert-banner" role="alert">
+      <span class="icon">🚨</span>
+      <span>앗! 곧 소비기한이 끝나는 재료가 있어요</span>
+    </div>
+
+    <!-- 내 냉장고 section -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title">내 냉장고</span>
+        <button class="see-all" onclick="navigate('rescue')">전체 보기 ›</button>
+      </div>
+      <div class="ing-scroll">
+        <div class="ing-chip"><span class="emoji">🥛</span><span class="name">우유</span><span class="expiry-badge badge-urgent">D-1</span></div>
+        <div class="ing-chip"><span class="emoji">🧅</span><span class="name">양파</span><span class="expiry-badge badge-caution">D-5</span></div>
+        <div class="ing-chip"><span class="emoji">🥚</span><span class="name">계란</span><span class="expiry-badge badge-safe">D-10</span></div>
+        <div class="ing-chip"><span class="emoji">🥬</span><span class="name">시금치</span><span class="expiry-badge badge-urgent">D-2</span></div>
+        <div class="ing-chip"><span class="emoji">🧈</span><span class="name">버터</span><span class="expiry-badge badge-safe">D-14</span></div>
+        <div class="ing-chip"><span class="emoji">🧀</span><span class="name">치즈</span><span class="expiry-badge badge-caution">D-6</span></div>
+      </div>
+    </div>
+
+    <!-- 오늘의 추천 레시피 section -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title">오늘의 추천 레시피</span>
+        <button class="see-all">더보기 ›</button>
+      </div>
+      <div class="recipe-scroll">
+        <div class="recipe-card" onclick="navigate('recipe')">
+          <div class="recipe-thumb">🍝<span class="recipe-match-chip">재료 4개 일치</span></div>
+          <div class="recipe-meta">
+            <div class="recipe-name">우유 시금치 크림파스타</div>
+            <div class="recipe-pills"><span class="recipe-pill">15분</span><span class="recipe-pill">1인분</span><span class="recipe-pill">쉬움</span></div>
+          </div>
+        </div>
+        <div class="recipe-card" onclick="navigate('recipe')">
+          <div class="recipe-thumb">🥗<span class="recipe-match-chip">재료 3개 일치</span></div>
+          <div class="recipe-meta">
+            <div class="recipe-name">시금치 계란볶음</div>
+            <div class="recipe-pills"><span class="recipe-pill">10분</span><span class="recipe-pill">1인분</span><span class="recipe-pill">쉬움</span></div>
+          </div>
+        </div>
+        <div class="recipe-card" onclick="navigate('recipe')">
+          <div class="recipe-thumb">🍳<span class="recipe-match-chip">재료 2개 일치</span></div>
+          <div class="recipe-meta">
+            <div class="recipe-name">계란 치즈 오믈렛</div>
+            <div class="recipe-pills"><span class="recipe-pill">12분</span><span class="recipe-pill">1인분</span><span class="recipe-pill">쉬움</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탐정 사무소 section -->
+    <div class="detective-office">
+      <div class="office-bg">
+        <div class="office-fade"></div>
+        <div class="office-content">
+          <img class="office-mascot mascot-bob" src="assets/detective_recipe.png" alt="냉탐이">
+          <div class="speech-bubble">저에게 의뢰를 주시면 맞춤 레시피를 추천해 드릴게요!</div>
+        </div>
+      </div>
+      <div class="office-btn-area">
+        <button class="rd-btn-primary" onclick="navigate('chat')">🕵️ 탐정 사무소 입장하기</button>
+      </div>
+    </div>
+
+    <!-- 최근 활동 -->
+    <div class="section" style="margin-bottom:32px;">
+      <div class="section-head">
+        <span class="section-title">최근 활동</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--rd-white);border:1px solid var(--rd-gray-200);border-radius:16px;box-shadow:var(--rd-shadow-sm);">
+          <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#F9F5FF,#ECFDF5);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🍝</div>
+          <div style="flex:1;">
+            <div style="font-size:13.5px;font-weight:600;color:var(--rd-gray-800);">크림파스타</div>
+            <div style="font-size:12px;color:var(--rd-gray-400);margin-top:2px;">어제 · 15분</div>
+          </div>
+          <span style="font-size:11px;color:var(--rd-primary);font-weight:600;background:var(--rd-primary-light);padding:3px 10px;border-radius:9999px;">완성 🎉</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--rd-white);border:1px solid var(--rd-gray-200);border-radius:16px;box-shadow:var(--rd-shadow-sm);">
+          <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#F9F5FF,#ECFDF5);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🥗</div>
+          <div style="flex:1;">
+            <div style="font-size:13.5px;font-weight:600;color:var(--rd-gray-800);">시금치 계란볶음</div>
+            <div style="font-size:12px;color:var(--rd-gray-400);margin-top:2px;">3일 전 · 10분</div>
+          </div>
+          <span style="font-size:11px;color:var(--rd-primary);font-weight:600;background:var(--rd-primary-light);padding:3px 10px;border-radius:9999px;">완성 🎉</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="navigate('home')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a2 2 0 01-2 2h-4v-6h-6v6H5a2 2 0 01-2-2v-9z"/></svg>
+      <span>홈</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('rescue')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><line x1="5" y1="10" x2="19" y2="10"/></svg>
+      <span>냉장고</span>
+    </button>
+    <div class="nav-fab-wrap">
+      <button class="nav-fab" onclick="navigate('ai')" aria-label="AI 식재료 인식">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8a2 2 0 012-2z"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+      </button>
+    </div>
+    <button class="nav-btn" onclick="navigate('chat')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h11a2 2 0 012 2v14H8a2 2 0 01-2-2V4z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+      <span>레시피</span>
+    </button>
+    <button class="nav-btn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+      <span>프로필</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN 2 — RESCUE LIST (구조대 목록)
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-rescue">
+  <header class="app-header">
+    <button class="icon-btn" onclick="navigate('home')" aria-label="뒤로">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="title">구조대 목록</span>
+    <span class="spacer"></span>
+  </header>
+
+  <div class="scroll-body" style="padding-bottom:100px">
+    <!-- Urgent section -->
+    <div style="padding:16px 0 0;">
+      <div style="padding:0 16px 10px;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:13px;font-weight:700;color:var(--rd-urgent-fg);">🚨 긴급 구조</span>
+        <span style="background:var(--rd-urgent-bg);color:var(--rd-urgent-fg);border:1px solid var(--rd-urgent-bd);border-radius:9999px;font-size:11px;font-weight:700;padding:1px 8px;">2개</span>
+      </div>
+      <div class="ing-list-item">
+        <span class="ing-list-emoji">🥛</span>
+        <div class="ing-list-info">
+          <div class="ing-list-name">우유</div>
+          <div class="ing-list-sub">소비기한 내일까지 · 900ml</div>
+        </div>
+        <span class="expiry-badge badge-urgent">D-1</span>
+      </div>
+      <div class="ing-list-item">
+        <span class="ing-list-emoji">🥬</span>
+        <div class="ing-list-info">
+          <div class="ing-list-name">시금치</div>
+          <div class="ing-list-sub">소비기한 2일 후 · 한 봉지</div>
+        </div>
+        <span class="expiry-badge badge-urgent">D-2</span>
+      </div>
+    </div>
+
+    <!-- Caution section -->
+    <div style="padding:16px 0 0;">
+      <div style="padding:0 16px 10px;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:13px;font-weight:700;color:var(--rd-caution-fg);">⚠️ 주의 재료</span>
+        <span style="background:var(--rd-caution-bg);color:var(--rd-caution-fg);border:1px solid var(--rd-caution-bd);border-radius:9999px;font-size:11px;font-weight:700;padding:1px 8px;">2개</span>
+      </div>
+      <div class="ing-list-item">
+        <span class="ing-list-emoji">🧅</span>
+        <div class="ing-list-info">
+          <div class="ing-list-name">양파</div>
+          <div class="ing-list-sub">소비기한 5일 후 · 2개</div>
+        </div>
+        <span class="expiry-badge badge-caution">D-5</span>
+      </div>
+      <div class="ing-list-item">
+        <span class="ing-list-emoji">🧀</span>
+        <div class="ing-list-info">
+          <div class="ing-list-name">슬라이스 치즈</div>
+          <div class="ing-list-sub">소비기한 6일 후 · 10장</div>
+        </div>
+        <span class="expiry-badge badge-caution">D-6</span>
+      </div>
+    </div>
+
+    <!-- Safe section -->
+    <div style="padding:16px 0 0;">
+      <div style="padding:0 16px 10px;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:13px;font-weight:700;color:var(--rd-safe-fg);">✅ 여유 재료</span>
+        <span style="background:var(--rd-safe-bg);color:var(--rd-safe-fg);border:1px solid var(--rd-safe-bd);border-radius:9999px;font-size:11px;font-weight:700;padding:1px 8px;">2개</span>
+      </div>
+      <div class="ing-list-item">
+        <span class="ing-list-emoji">🥚</span>
+        <div class="ing-list-info">
+          <div class="ing-list-name">계란</div>
+          <div class="ing-list-sub">소비기한 10일 후 · 6개</div>
+        </div>
+        <span class="expiry-badge badge-safe">D-10</span>
+      </div>
+      <div class="ing-list-item">
+        <span class="ing-list-emoji">🧈</span>
+        <div class="ing-list-info">
+          <div class="ing-list-name">버터</div>
+          <div class="ing-list-sub">소비기한 14일 후 · 200g</div>
+        </div>
+        <span class="expiry-badge badge-safe">D-14</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-cta">
+    <button class="rd-btn-primary" onclick="navigate('ai')">📷 AI로 식재료 인식하기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN 3 — AI RECOGNITION
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-ai">
+  <header class="app-header">
+    <button class="icon-btn" onclick="navigate('home')" aria-label="뒤로">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="title">AI 식재료 인식</span>
+    <span class="spacer"></span>
+  </header>
+
+  <div class="scroll-body" style="padding-bottom:100px">
+    <!-- Thinking mascot -->
+    <div style="display:flex;flex-direction:column;align-items:center;padding:20px 16px 0;text-align:center;">
+      <img src="assets/detective_camera.png" alt="냉탐이" style="width:80px;height:80px;object-fit:contain;margin-bottom:12px;">
+      <div style="font-size:15px;font-weight:700;color:var(--rd-gray-800);">냉장고 사진을 찍어주세요</div>
+      <div style="font-size:13px;color:var(--rd-gray-400);margin-top:4px;">AI가 재료를 자동으로 인식해 드릴게요!</div>
+    </div>
+
+    <!-- Dropzone -->
+    <div class="drop-zone" id="dropzone" onclick="showAIResult()">
+      <span class="drop-zone-icon">📷</span>
+      <div class="drop-zone-text">
+        사진을 탭하거나 드래그해 주세요<br>
+        <span class="drop-zone-link">갤러리에서 선택하기</span>
+      </div>
+    </div>
+
+    <!-- Detected ingredients (hidden until "upload") -->
+    <div class="ai-result" id="ai-result" style="display:none;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <img src="assets/detective_thinking.png" alt="냉탐이" style="width:36px;height:36px;object-fit:contain;">
+        <div style="font-size:14px;font-weight:700;color:var(--rd-gray-800);">🕵️ 사건 단서 — <span id="detected-count">6개</span> 재료 발견!</div>
+      </div>
+      <div class="ai-chips" id="ai-chips">
+        <button class="ai-chip" onclick="removeChip(this)">🥦 브로콜리 <span class="rm">✕</span></button>
+        <button class="ai-chip" onclick="removeChip(this)">🥕 당근 <span class="rm">✕</span></button>
+        <button class="ai-chip" onclick="removeChip(this)">🧅 양파 <span class="rm">✕</span></button>
+        <button class="ai-chip" onclick="removeChip(this)">🥛 우유 <span class="rm">✕</span></button>
+        <button class="ai-chip" onclick="removeChip(this)">🥚 계란 <span class="rm">✕</span></button>
+        <button class="ai-chip" onclick="removeChip(this)">🧀 치즈 <span class="rm">✕</span></button>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--rd-gray-400);">잘못 인식된 재료는 탭해서 제거할 수 있어요</div>
+    </div>
+  </div>
+
+  <div class="footer-cta" id="ai-footer" style="display:none;">
+    <button class="rd-btn-primary" onclick="navigate('chat')">재료 추가하기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN 4 — CHAT (탐정 사무소)
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-chat">
+  <header class="app-header" style="flex-direction:column;align-items:center;padding:10px 16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+      <button class="icon-btn" onclick="navigate('home')" aria-label="뒤로">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div style="text-align:center;">
+        <div class="title">탐정 사무소</div>
+        <div style="font-size:11px;color:var(--rd-gray-400);">냉탐이와 함께 레시피 의뢰하기</div>
+      </div>
+      <span class="spacer"></span>
+    </div>
+  </header>
+
+  <!-- Ingredient chips -->
+  <div class="chat-chips-row" id="chat-chips">
+    <button class="chat-chip selected" onclick="toggleChip(this)">🥛 우유</button>
+    <button class="chat-chip selected" onclick="toggleChip(this)">🥬 시금치</button>
+    <button class="chat-chip" onclick="toggleChip(this)">🥚 계란</button>
+    <button class="chat-chip" onclick="toggleChip(this)">🧅 양파</button>
+    <button class="chat-chip" onclick="toggleChip(this)">🧀 치즈</button>
+    <button class="chat-chip" onclick="toggleChip(this)">🧈 버터</button>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-ai">
+      <div class="chat-avatar"><img src="assets/detective_frontview.png" alt="냉탐이"></div>
+      <div class="bubble-ai">안녕하세요, 지민님 😊<br>저에게 의뢰를 주시면 맞춤 레시피를 추천해 드릴게요!</div>
+    </div>
+    <div class="chat-ai">
+      <div class="chat-avatar"><img src="assets/detective_frontview.png" alt="냉탐이"></div>
+      <div class="bubble-ai">위에서 사용할 재료를 선택하거나, 직접 의뢰 내용을 입력해 주세요 🔍</div>
+    </div>
+  </div>
+
+  <!-- Composer -->
+  <div class="chat-composer">
+    <input class="chat-input" id="chat-input" type="text" placeholder="의뢰 내용을 입력해 주세요..." onkeypress="handleChatKey(event)">
+    <button class="send-btn" onclick="sendChatMessage()" aria-label="전송">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN 5 — RECIPE DETAIL
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-recipe">
+  <header class="app-header">
+    <button class="icon-btn" onclick="navigate('home')" aria-label="뒤로">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="title">레시피</span>
+    <button class="icon-btn" aria-label="저장">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+    </button>
+  </header>
+
+  <div class="scroll-body" style="padding-bottom:100px">
+    <div class="recipe-detail-hero">🍝</div>
+    <div class="recipe-detail-info">
+      <div class="recipe-detail-name">우유 시금치 크림파스타</div>
+      <div class="recipe-detail-tags">
+        <span class="recipe-detail-tag">⏱ 15분</span>
+        <span class="recipe-detail-tag">🍽 1인분</span>
+        <span class="recipe-detail-tag">📊 쉬움</span>
+        <span class="recipe-detail-tag">🥬 재료 4개 일치</span>
+      </div>
+    </div>
+
+    <!-- Ingredients -->
+    <div class="recipe-detail-section">
+      <div class="recipe-detail-section-title">
+        <span>🛒</span> 재료
+      </div>
+      <div class="ing-row"><span class="emoji">🍝</span><span class="nm">스파게티면</span><span class="amt">80g</span></div>
+      <div class="ing-row"><span class="emoji">🥛</span><span class="nm">우유</span><span class="amt">200ml</span></div>
+      <div class="ing-row"><span class="emoji">🥬</span><span class="nm">시금치</span><span class="amt">한 줌</span></div>
+      <div class="ing-row"><span class="emoji">🧅</span><span class="nm">양파</span><span class="amt">1/4개</span></div>
+      <div class="ing-row"><span class="emoji">🧈</span><span class="nm">버터</span><span class="amt">10g</span></div>
+      <div class="ing-row"><span class="emoji">🧂</span><span class="nm">소금, 후추</span><span class="amt">약간</span></div>
+    </div>
+
+    <!-- Steps -->
+    <div class="recipe-detail-section">
+      <div class="recipe-detail-section-title">
+        <span>🍳</span> 조리 순서
+      </div>
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-text">면을 소금물에 삶아 주세요. 표시된 시간보다 1분 일찍 건져내세요.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-text">팬에 버터를 녹이고 양파를 투명해질 때까지 볶아 주세요.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-text">우유를 넣고 중불에서 끓어오를 때까지 저어 주세요.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-text">시금치와 삶은 면을 넣고 소금, 후추로 간을 맞춰 주세요.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-text">소스가 면에 충분히 배면 완성이에요! 🎉</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-cta">
+    <button class="rd-btn-primary" onclick="navigate('cooking')">🍳 요리 시작하기</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN 6 — COOKING (조리)
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-cooking">
+  <header class="app-header">
+    <button class="icon-btn" onclick="navigate('recipe')" aria-label="뒤로">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span class="title">조리 중</span>
+    <span class="spacer"></span>
+  </header>
+
+  <div class="scroll-body" style="padding-bottom:100px">
+    <!-- Phase nodes -->
+    <div class="cooking-progress">
+      <div class="phase-nodes">
+        <div class="phase-node">
+          <div class="phase-dot done">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="phase-label">재료 준비</div>
+        </div>
+        <div class="phase-line done"></div>
+        <div class="phase-node">
+          <div class="phase-dot curr"><div class="dot-inner"></div></div>
+          <div class="phase-label">조리</div>
+        </div>
+        <div class="phase-line"></div>
+        <div class="phase-node">
+          <div class="phase-dot pend"></div>
+          <div class="phase-label pending">요리 완성</div>
+        </div>
+      </div>
+
+      <!-- Step bars -->
+      <div class="step-bars" style="margin-top:20px;">
+        <div class="step-bar"><div class="step-bar-track done"></div><div class="step-bar-label done">STEP 1</div></div>
+        <div class="step-bar"><div class="step-bar-track done"></div><div class="step-bar-label active">STEP 2</div></div>
+        <div class="step-bar"><div class="step-bar-track"></div><div class="step-bar-label">STEP 3</div></div>
+        <div class="step-bar"><div class="step-bar-track"></div><div class="step-bar-label">STEP 4</div></div>
+        <div class="step-bar"><div class="step-bar-track"></div><div class="step-bar-label">STEP 5</div></div>
+      </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="cooking-timer">
+      <div class="timer-label">남은 시간</div>
+      <div class="timer-display" id="timer-display">08:32</div>
+      <div class="timer-controls">
+        <button class="timer-btn" onclick="resetTimer()" aria-label="초기화">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+        </button>
+        <button class="timer-btn primary" id="timer-toggle" onclick="toggleTimer()" aria-label="시작/일시정지">
+          <svg id="timer-icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg id="timer-icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <button class="timer-btn" onclick="nextStep()" aria-label="다음 단계">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Current step -->
+    <div class="cooking-step-card">
+      <div class="cooking-step-label">STEP 2 / 5</div>
+      <div class="cooking-step-text">팬에 버터를 녹이고 양파를 투명해질 때까지 볶아 주세요. 중불에서 약 3분 정도 저어 주세요.</div>
+    </div>
+
+    <!-- Next step preview -->
+    <div style="margin:12px 16px 0;padding:12px 14px;background:var(--rd-gray-50);border:1px solid var(--rd-gray-200);border-radius:14px;">
+      <div style="font-size:10px;font-weight:600;color:var(--rd-gray-400);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;">다음 단계</div>
+      <div style="font-size:13px;color:var(--rd-gray-500);">우유를 넣고 중불에서 끓어오를 때까지 저어 주세요.</div>
+    </div>
+  </div>
+
+  <div class="footer-cta">
+    <button class="rd-btn-primary" onclick="navigate('complete')">다음 단계 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN 7 — COMPLETION (요리 완성!)
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-complete">
+  <header class="app-header">
+    <span class="spacer"></span>
+    <span class="title">요리 완성! 🎉</span>
+    <span class="spacer"></span>
+  </header>
+
+  <div class="completion">
+    <img class="completion-mascot" src="assets/detective_salute.png" alt="냉탐이">
+    <div class="completion-title">사건 해결! 🎉</div>
+    <div class="completion-sub">
+      우유 시금치 크림파스타를 완성했어요!<br>
+      버려질 뻔한 재료 2.3kg을 구했어요. 🥬<br><br>
+      <strong style="color:var(--rd-primary);">이번 달 약 25,800원</strong>을 아껴드렸어요!
+    </div>
+    <div class="completion-btns">
+      <button class="rd-btn-primary" onclick="navigate('home')">홈으로 돌아가기</button>
+      <button class="rd-btn-secondary" onclick="navigate('recipe')">다시 보기</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+/* ── Navigation ──────────────────────────────────────────── */
+const screens = {
+  home:'screen-home', rescue:'screen-rescue', ai:'screen-ai',
+  chat:'screen-chat', recipe:'screen-recipe', cooking:'screen-cooking',
+  complete:'screen-complete'
+};
+
+function navigate(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screens[id]);
+  if (target) {
+    target.classList.add('active');
+    target.querySelector('.scroll-body')?.scrollTo(0,0);
+  }
+  if (id === 'cooking') { resetTimer(); }
+}
+
+/* ── AI Recognition mock ─────────────────────────────────── */
+function showAIResult() {
+  const dz = document.getElementById('dropzone');
+  dz.innerHTML = `
+    <img src="assets/detective_thinking.png" style="width:64px;height:64px;object-fit:contain;animation:mascot-bob 1.2s infinite">
+    <div style="font-size:14px;color:var(--rd-gray-500);">냉탐이가 재료를 분석하는 중이에요...</div>
+  `;
+  setTimeout(() => {
+    document.getElementById('ai-result').style.display = 'block';
+    document.getElementById('ai-footer').style.display = 'block';
+    dz.innerHTML = `<img src="assets/detective_happy.png" style="width:64px;height:64px;object-fit:contain;"><div style="font-size:13px;color:var(--rd-primary);font-weight:600;">분석 완료! 6개 재료 발견 🎉</div>`;
+    updateDetectedCount();
+  }, 1800);
+}
+
+function removeChip(btn) {
+  btn.remove();
+  updateDetectedCount();
+}
+
+function updateDetectedCount() {
+  const count = document.querySelectorAll('#ai-chips .ai-chip').length;
+  const el = document.getElementById('detected-count');
+  if (el) el.textContent = count + '개';
+}
+
+/* ── Chat ────────────────────────────────────────────────── */
+function toggleChip(el) { el.classList.toggle('selected'); }
+
+function handleChatKey(e) { if (e.key === 'Enter') sendChatMessage(); }
+
+const responses = [
+  {user:'선택한 재료로 레시피 찾아줘!', ai:'<b>🕵️ 사건 단서</b><br>우유와 시금치로 만들 수 있는 맛있는 레시피를 찾았어요!', hasRecipes:true},
+  {user:null, ai:'다른 재료 조합도 시도해보세요. 원하시는 재료를 선택해 의뢰해 주세요 🔍', hasRecipes:false},
+];
+let chatIdx = 0;
+
+function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  const messages = document.getElementById('chat-messages');
+
+  const selectedChips = [...document.querySelectorAll('#chat-chips .chat-chip.selected')].map(c => c.textContent.trim());
+  const msgText = text || (selectedChips.length ? '선택한 재료(' + selectedChips.join(', ') + ')로 레시피 찾아줘!' : null);
+  if (!msgText) return;
+
+  // User bubble
+  const userBubble = document.createElement('div');
+  userBubble.className = 'chat-user';
+  userBubble.innerHTML = `<div class="bubble-user">${escHtml(msgText)}</div>`;
+  messages.appendChild(userBubble);
+  input.value = '';
+
+  // Typing indicator
+  const typing = document.createElement('div');
+  typing.className = 'chat-ai';
+  typing.innerHTML = `<div class="chat-avatar"><img src="assets/detective_finding.png" alt="냉탐이"></div><div class="bubble-ai"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+  messages.appendChild(typing);
+  messages.scrollTop = messages.scrollHeight;
+
+  setTimeout(() => {
+    typing.remove();
+    const aiBubble = document.createElement('div');
+    aiBubble.className = 'chat-ai';
+    aiBubble.innerHTML = `<div class="chat-avatar"><img src="assets/detective_recipe.png" alt="냉탐이"></div><div class="bubble-ai"><b>🕵️ 사건 단서</b><br>두 가지 재료로 만들 수 있는 든든한 한끼를 찾았어요!</div>`;
+    messages.appendChild(aiBubble);
+
+    // Recipe strip
+    const strip = document.createElement('div');
+    strip.className = 'recipe-strip';
+    strip.innerHTML = `
+      <div class="r-chip" onclick="navigate('recipe')"><div class="th">🍝</div><div class="nm">크림파스타</div><div class="mt">⏱ 15분</div></div>
+      <div class="r-chip" onclick="navigate('recipe')"><div class="th">🥗</div><div class="nm">시금치볶음</div><div class="mt">⏱ 10분</div></div>
+      <div class="r-chip" onclick="navigate('recipe')"><div class="th">🥣</div><div class="nm">우유 수프</div><div class="mt">⏱ 12분</div></div>
+    `;
+    messages.appendChild(strip);
+    messages.scrollTop = messages.scrollHeight;
+  }, 1600);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── Timer ───────────────────────────────────────────────── */
+let timerInterval = null;
+let timerSeconds = 8 * 60 + 32;
+let timerRunning = false;
+
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function renderTimer() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  document.getElementById('timer-display').textContent = pad(m) + ':' + pad(s);
+}
+
+function toggleTimer() {
+  timerRunning = !timerRunning;
+  document.getElementById('timer-icon-play').style.display = timerRunning ? 'none' : '';
+  document.getElementById('timer-icon-pause').style.display = timerRunning ? '' : 'none';
+  if (timerRunning) {
+    timerInterval = setInterval(() => {
+      if (timerSeconds > 0) { timerSeconds--; renderTimer(); }
+      else { clearInterval(timerInterval); timerRunning = false; }
+    }, 1000);
+  } else {
+    clearInterval(timerInterval);
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 8 * 60 + 32;
+  renderTimer();
+  document.getElementById('timer-icon-play').style.display = '';
+  document.getElementById('timer-icon-pause').style.display = 'none';
+}
+
+function nextStep() { navigate('complete'); }
+
+renderTimer();
+</script>
+</body>
+</html>
