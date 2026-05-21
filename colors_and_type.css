@@ -1,0 +1,341 @@
+/* ============================================================
+   Refrigerator Detective (냉장고 탐정) — Design Tokens
+   Source of truth: nacong/refrigerator-detective (Next.js 14 + Tailwind)
+   All values lifted verbatim from production code.
+   ============================================================ */
+
+:root {
+  /* -------- BRAND COLORS -------- */
+  --rd-primary:        #13AF70;   /* signature green — CTA, active, accent */
+  --rd-primary-light:  #E8F9F1;   /* light-mint tint — chips, mascot bubble, badges */
+  --rd-primary-press:  #0E8F5B;   /* darker green — press feedback */
+
+  /* -------- HERO LAVENDER (used only on summary / promo cards) -------- */
+  --rd-hero-violet:    #7B5CD6;   /* the ✨ sparkle accent next to "냉장고 탐정" */
+  --rd-hero-violet-soft:#B9A4F2;
+  --rd-hero-bg-1:      #EDE3FF;   /* lavender start */
+  --rd-hero-bg-2:      #E5EEFF;   /* periwinkle mid */
+  --rd-hero-bg-3:      #E6F7EC;   /* mint end */
+
+  /* -------- NEUTRALS (Tailwind gray scale, used verbatim) -------- */
+  --rd-white:    #FFFFFF;
+  --rd-gray-50:  #F9FAFB;         /* row tint, input bg */
+  --rd-gray-100: #F3F4F6;         /* page bg, secondary button, chip default */
+  --rd-gray-200: #E5E7EB;         /* borders, dashed outlines, dividers */
+  --rd-gray-300: #D1D5DB;         /* placeholder dots, faint icons */
+  --rd-gray-400: #9CA3AF;         /* secondary text, meta */
+  --rd-gray-500: #6B7280;         /* body subdued */
+  --rd-gray-700: #374151;         /* icons, settings header */
+  --rd-gray-800: #1F2937;         /* primary heading, dark "탐정과 레시피" button */
+  --rd-gray-900: #111827;         /* timer numerals, hi-emphasis */
+
+  /* -------- SEMANTIC — EXPIRY (구조대 traffic-light) -------- */
+  --rd-urgent-bg:   #FEE2E2;   /* red-100 · D-1 ~ D-3  */
+  --rd-urgent-fg:   #DC2626;
+  --rd-urgent-bd:   #FECACA;
+
+  --rd-caution-bg:  #FEF3C7;   /* yellow-100 · D-4 ~ D-7 */
+  --rd-caution-fg:  #D97706;
+  --rd-caution-bd:  #FDE68A;
+
+  --rd-safe-bg:     #DCFCE7;   /* green-100 · D-8+ */
+  --rd-safe-fg:     #16A34A;
+  --rd-safe-bd:     #BBF7D0;
+
+  /* -------- SEMANTIC — STATE -------- */
+  --rd-error-bg:    #FEF2F2;
+  --rd-error-bd:    #FECACA;
+  --rd-error-fg:    #DC2626;
+  --rd-logout-fg:   #EF4444;   /* destructive */
+  --rd-warn-bg:     #FFF7ED;
+  --rd-warn-fg:     #FB923C;
+
+  /* -------- RADII -------- */
+  --rd-radius-sm:   0.5rem;    /*  8px — compact tags */
+  --rd-radius-md:   0.75rem;   /* 12px — inputs, secondary tiles */
+  --rd-radius-lg:   1rem;      /* 16px */
+  --rd-radius-2xl:  1rem;      /* 16px — DEFAULT card */
+  --rd-radius-3xl:  1.5rem;    /* 24px — hero cards, dropzone, sheet top */
+  --rd-radius-full: 9999px;    /* pills, avatars, chips, badges */
+
+  /* -------- SPACING (Tailwind-aligned 4px base) -------- */
+  --rd-space-1:  0.25rem;   /*  4px */
+  --rd-space-2:  0.5rem;    /*  8px */
+  --rd-space-3:  0.75rem;   /* 12px — most-used inter-element gap */
+  --rd-space-4:  1rem;      /* 16px — horizontal page padding */
+  --rd-space-5:  1.25rem;   /* 20px */
+  --rd-space-6:  1.5rem;    /* 24px — between sections */
+  --rd-space-8:  2rem;      /* 32px */
+  --rd-space-12: 3rem;      /* 48px */
+
+  /* -------- SHADOWS (only two in the app) -------- */
+  --rd-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);          /* card lift */
+  --rd-shadow-nav: 0 -2px 24px rgba(17, 24, 39, 0.08);    /* bottom nav rise */
+  --rd-shadow-fab: 0 6px 16px rgba(19, 175, 112, 0.35);   /* green camera FAB */
+
+  /* -------- LAYOUT -------- */
+  --rd-mobile-max: 430px;        /* max content column */
+  --rd-touch-target: 44px;       /* min hit target */
+
+  /* -------- MOTION -------- */
+  --rd-press-scale: 0.98;        /* active:scale-[0.98] — large surfaces */
+  --rd-press-scale-tight: 0.95;  /* active:scale-95 — chips / FAB */
+  --rd-duration: 150ms;
+  --rd-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* -------- TYPOGRAPHY — BASE -------- */
+  /* Production loads Inter via next/font/google; Korean falls back to
+     Apple SD Gothic Neo / Noto Sans KR. Geist VF is bundled but unused. */
+  --rd-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                  'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --rd-font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Font sizes — every value seen in production */
+  --rd-text-10:   0.625rem;   /* 10px — STEP labels, micro-meta */
+  --rd-text-xs:   0.75rem;    /* 12px — meta, sub-label */
+  --rd-text-sm:   0.875rem;   /* 14px — DEFAULT mobile body */
+  --rd-text-base: 1rem;       /* 16px — section heading, paragraph */
+  --rd-text-lg:   1.125rem;   /* 18px */
+  --rd-text-xl:   1.25rem;    /* 20px — page hero */
+  --rd-text-2xl:  1.5rem;     /* 24px — splash / detective title */
+  --rd-text-6xl:  3.75rem;    /* 60px — cook-time numeral */
+
+  --rd-weight-regular:  400;
+  --rd-weight-medium:   500;
+  --rd-weight-semibold: 600;
+  --rd-weight-bold:     700;
+
+  --rd-leading-tight:   1.25;
+  --rd-leading-snug:    1.375;
+  --rd-leading-normal:  1.5;
+  --rd-leading-relaxed: 1.625;
+}
+
+/* ============================================================
+   FONT LOADING — Geist VF as fallback (Inter is loaded by host app)
+   ============================================================ */
+
+@font-face {
+  font-family: 'Geist';
+  src: url('./fonts/GeistVF.woff') format('woff-variations'),
+       url('./fonts/GeistVF.woff') format('woff');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('./fonts/GeistMonoVF.woff') format('woff-variations'),
+       url('./fonts/GeistMonoVF.woff') format('woff');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* ============================================================
+   SEMANTIC TYPOGRAPHY — mapped from real surfaces
+   ============================================================ */
+
+.rd-display {            /* 60px cook-time numeral */
+  font-size: var(--rd-text-6xl);
+  font-weight: var(--rd-weight-bold);
+  color: var(--rd-gray-900);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+}
+
+.rd-h1 {                 /* "냉장고 탐정" splash, recipe detail title */
+  font-size: var(--rd-text-2xl);
+  font-weight: var(--rd-weight-bold);
+  color: var(--rd-gray-800);
+  line-height: var(--rd-leading-tight);
+}
+
+.rd-h2 {                 /* tutorial big heading, recipe name */
+  font-size: var(--rd-text-xl);
+  font-weight: var(--rd-weight-bold);
+  color: var(--rd-gray-900);
+  line-height: var(--rd-leading-tight);
+}
+
+.rd-h3 {                 /* section heading — "구조대 목록" */
+  font-size: var(--rd-text-base);
+  font-weight: var(--rd-weight-bold);
+  color: var(--rd-gray-800);
+  line-height: var(--rd-leading-snug);
+}
+
+.rd-h4 {                 /* in-app page header — "AI 식재료 인식" */
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-bold);
+  color: var(--rd-gray-800);
+}
+
+.rd-body {               /* default body */
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-regular);
+  color: var(--rd-gray-700);
+  line-height: var(--rd-leading-normal);
+}
+
+.rd-body-emph {          /* slogan, descriptive body */
+  font-size: var(--rd-text-base);
+  font-weight: var(--rd-weight-regular);
+  color: var(--rd-gray-500);
+  line-height: var(--rd-leading-relaxed);
+}
+
+.rd-meta {               /* "유통기한", "1시간 전" */
+  font-size: var(--rd-text-xs);
+  font-weight: var(--rd-weight-regular);
+  color: var(--rd-gray-400);
+}
+
+.rd-micro {              /* STEP labels, kbd-style micro-tags */
+  font-size: var(--rd-text-10);
+  font-weight: var(--rd-weight-medium);
+  letter-spacing: 0.02em;
+}
+
+.rd-overline {           /* "REFRIGERATOR DETECTIVE" tagline */
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-medium);
+  color: var(--rd-gray-400);
+  letter-spacing: 0.1em;
+}
+
+.rd-link {               /* "더보기 →", "전체 보기" */
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-medium);
+  color: var(--rd-primary);
+  cursor: pointer;
+}
+
+.rd-button-label {       /* primary CTA label */
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-semibold);
+  line-height: 1;
+}
+
+/* ============================================================
+   COMMON COMPOSITES — the only "components" baked into CSS;
+   anything more lives in JSX in /ui_kits/.
+   ============================================================ */
+
+.rd-card {
+  background: var(--rd-white);
+  border: 1px solid var(--rd-gray-200);
+  border-radius: var(--rd-radius-2xl);
+  box-shadow: var(--rd-shadow-sm);
+}
+
+.rd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rd-space-1);
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--rd-radius-full);
+  font-size: var(--rd-text-xs);
+  font-weight: var(--rd-weight-medium);
+  background: var(--rd-gray-100);
+  color: var(--rd-gray-500);
+}
+.rd-chip--selected {
+  background: var(--rd-primary);
+  color: var(--rd-white);
+}
+.rd-chip--mint {
+  background: var(--rd-primary-light);
+  color: var(--rd-primary);
+}
+
+.rd-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rd-space-2);
+  width: 100%;
+  padding: 1rem;
+  background: var(--rd-primary);
+  color: var(--rd-white);
+  font-weight: var(--rd-weight-semibold);
+  font-size: var(--rd-text-sm);
+  border-radius: var(--rd-radius-2xl);
+  border: 0;
+  transition: transform var(--rd-duration) var(--rd-easing);
+  cursor: pointer;
+}
+.rd-btn-primary:active { transform: scale(var(--rd-press-scale)); }
+.rd-btn-primary:disabled { opacity: 0.5; }
+
+.rd-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rd-space-2);
+  width: 100%;
+  padding: 1rem;
+  background: var(--rd-gray-100);
+  color: var(--rd-gray-700);
+  font-weight: var(--rd-weight-semibold);
+  font-size: var(--rd-text-sm);
+  border-radius: var(--rd-radius-2xl);
+  border: 0;
+  cursor: pointer;
+}
+
+.rd-btn-dark {            /* "탐정과 레시피 찾기" — only used paired with primary */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rd-space-2);
+  width: 100%;
+  padding: 1rem;
+  background: var(--rd-gray-800);
+  color: var(--rd-white);
+  font-weight: var(--rd-weight-semibold);
+  font-size: var(--rd-text-sm);
+  border-radius: var(--rd-radius-2xl);
+  border: 0;
+  cursor: pointer;
+}
+
+.rd-icon-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rd-radius-full);
+  background: var(--rd-gray-100);
+  color: var(--rd-gray-700);
+  border: 0;
+  cursor: pointer;
+}
+.rd-icon-button:active { background: var(--rd-gray-200); }
+
+.rd-input {
+  width: 100%;
+  background: var(--rd-white);
+  border: 1px solid var(--rd-gray-200);
+  border-radius: var(--rd-radius-md);
+  padding: 0.75rem 1rem;
+  font-size: var(--rd-text-sm);
+  color: var(--rd-gray-800);
+  font-family: inherit;
+  outline: none;
+}
+.rd-input::placeholder { color: var(--rd-gray-400); }
+.rd-input:focus { border-color: var(--rd-primary); }
+
+/* hero summary card — the lavender→mint gradient hero used on home */
+.rd-hero-card {
+  position: relative;
+  border-radius: var(--rd-radius-3xl);
+  padding: var(--rd-space-4);
+  overflow: hidden;
+  background: linear-gradient(160deg,
+              var(--rd-hero-bg-1) 0%,
+              var(--rd-hero-bg-2) 40%,
+              var(--rd-hero-bg-3) 100%);
+  border: 1px solid rgba(229, 231, 235, 0.9);
+}
